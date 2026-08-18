@@ -1,9 +1,8 @@
 from fastapi import FastAPI, Request
 from fastapi.templating import Jinja2Templates
-from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
-import uvicorn
 from datetime import datetime
+import uvicorn
 
 from data.fetcher import fetch_price_data
 from data.rs_calculator import calculate_relative_strength
@@ -12,23 +11,37 @@ from data.tickers import TICKERS
 app = FastAPI(title="Market Relative Strength")
 templates = Jinja2Templates(directory="templates")
 
-# Einfacher In-Memory Cache (für den Start)
-_cache = {"data": None, "timestamp": None}
+# Globaler Cache
+_cache = {
+    "data": None,
+    "timestamp": None
+}
 
-def get_rs_data():
-    now = datetime.now()
-    # Cache 30 Minuten
-    if _cache["data"] is None or (now - _cache["timestamp"]).seconds > 1800:
-        print("Lade frische Daten von yfinance...")
-        closes = fetch_price_data(period="3mo")
-        rs_data = calculate_relative_strength(closes)
-        _cache["data"] = rs_data
-        _cache["timestamp"] = now
-    return _cache["data"]
+
+def load_data():
+    """Lädt die Daten und speichert sie im Cache."""
+    print("Lade frische Daten von Tiingo...")
+    closes = fetch_price_data(period="1mo")
+    rs_data = calculate_relative_strength(closes)
+    _cache["data"] = rs_data
+    _cache["timestamp"] = datetime.now()
+    print(f"✅ {len(rs_data)} Einträge geladen")
+    return rs_data
+
+
+@app.on_event("startup")
+async def startup_event():
+    """Beim App-Start einmal Daten laden."""
+    try:
+        load_data()
+    except Exception as e:
+        print(f"Fehler beim initialen Laden: {e}")
+        _cache["data"] = []
+
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request, group: str = "all"):
-    data = get_rs_data()
+    data = _cache["data"] or []
 
     if group != "all":
         data = [d for d in data if d["group"] == group]
@@ -44,5 +57,6 @@ async def index(request: Request, group: str = "all"):
         }
     )
 
+
 if __name__ == "__main__":
-    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

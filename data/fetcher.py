@@ -1,28 +1,94 @@
-import yfinance as yf
+import os
+import time
+import requests
 import pandas as pd
-from datetime import datetime, timedelta
+from dotenv import load_dotenv
 from .tickers import ALL_TICKERS, BENCHMARK
 
-def fetch_price_data(period: str = "3mo") -> pd.DataFrame:
-    """
-    Lädt Daily Close für alle Ticker + SPY.
-    Gibt ein DataFrame mit MultiIndex (Ticker, Date) zurück.
-    """
-    data = yf.download(
-        ALL_TICKERS,
-        period=period,
-        interval="1d",
-        group_by="ticker",
-        auto_adjust=True,
-        threads=True,
-        progress=False
-    )
+load_dotenv()
 
-    # Nur Close-Preise extrahieren
-    if len(ALL_TICKERS) == 1:
-        closes = data[["Close"]].rename(columns={"Close": ALL_TICKERS[0]})
-    else:
-        closes = data.xs("Close", axis=1, level=1)
+API_KEY = os.getenv("TIINGO_API_KEY")
+BASE_URL = "https://api.tiingo.com/tiingo/daily"
 
-    closes = closes.dropna(how="all")
+
+def fetch_single_ticker(ticker: str, start_date: str = "2025-01-01") -> pd.Series | None:
+    """Holt Daily Adjusted Close von Tiingo."""
+    if not API_KEY:
+        raise ValueError("TIINGO_API_KEY fehlt in .env")
+
+    url = f"{BASE_URL}/{ticker}/prices"
+    params = {
+        "startDate": start_date,
+        "token": API_KEY,
+    }
+    headers = {
+        "Content-Type": "application/json"
+    }
+
+    try:
+        r = requests.get(url, params=params, headers=headers, timeout=30)
+        
+        if r.status_code != 200:
+            print(f"  ⚠️  {ticker}: HTTP {r.status_code} – {r.text[:100]}")
+            return None
+
+        data = r.json()
+        
+        if not data:
+            print(f"  ⚠️  {ticker}: keine Daten")
+            return None
+
+        df = pd.DataFrame(data)
+        df["date"] = pd.to_datetime(df["date"])
+        df = df.set_index("date").sort_index()
+
+        # adjClose bevorzugen, sonst close
+        if "adjClose" in df.columns:
+            s = df["adjClose"]
+        else:
+            s = df["close"]
+
+        s.name = ticker
+        return s
+
+    except Exception as e:
+        print(f"  ❌ {ticker}: {e}")
+        return None
+
+
+def fetch_price_data(period: str = "3mo", delay: float = 0.3) -> pd.DataFrame:
+    """
+    Lädt alle Ticker einzeln über Tiingo.
+    """
+    print(f"Lade {len(ALL_TICKERS)} Ticker über Tiingo...\n")
+
+    series_list = []
+
+    for i, ticker in enumerate(ALL_TICKERS, 1):
+        print(f"[{i}/{len(ALL_TICKERS)}] {ticker} ...", end=" ")
+        s = fetch_single_ticker(ticker)
+
+        if s is not None and not s.empty:
+            series_list.append(s)
+            print(f"OK ({len(s)} Tage)")
+        else:
+            print("FEHLGESCHLAGEN")
+
+        if i < len(ALL_TICKERS):
+            time.sleep(delay)
+
+    if not series_list:
+        raise ValueError("Keine Ticker konnten geladen werden!")
+
+    closes = pd.concat(series_list, axis=1).sort_index()
+    
+    # Nur die letzten ~3 Monate behalten (optional)
+    if period == "3mo":
+        closes = closes.last("90D")
+    elif period == "1mo":
+        closes = closes.last("30D")
+
+    print(f"\n✅ Erfolgreich: {len(closes.columns)} von {len(ALL_TICKERS)} Tickern")
+    print(f"   Zeitraum: {closes.index.min().date()} → {closes.index.max().date()}")
+    
     return closes
