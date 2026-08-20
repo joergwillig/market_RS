@@ -2,6 +2,7 @@ import os
 import time
 import requests
 import pandas as pd
+from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from .tickers import ALL_TICKERS, BENCHMARK
 
@@ -20,8 +21,17 @@ def get_api_key() -> str:
     return key
 
 
-def fetch_single_ticker(ticker: str, start_date: str = "2025-01-01") -> pd.Series | None:
-    """Holt Daily Adjusted Close von Tiingo."""
+def fetch_single_ticker(
+    ticker: str,
+    start_date: str | None = None,
+) -> pd.Series | None:
+    """
+    Holt Daily Adjusted Close von Tiingo.
+    Standard: ca. 15 Monate Historie (YTD + 6M Perzentile).
+    """
+    if start_date is None:
+        start_date = (datetime.utcnow() - timedelta(days=450)).strftime("%Y-%m-%d")
+
     api_key = get_api_key()
 
     url = f"{BASE_URL}/{ticker}/prices"
@@ -30,7 +40,7 @@ def fetch_single_ticker(ticker: str, start_date: str = "2025-01-01") -> pd.Serie
         "token": api_key,
     }
     headers = {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
     }
 
     try:
@@ -50,6 +60,10 @@ def fetch_single_ticker(ticker: str, start_date: str = "2025-01-01") -> pd.Serie
         df["date"] = pd.to_datetime(df["date"])
         df = df.set_index("date").sort_index()
 
+        # Zeitzone entfernen, falls vorhanden (einheitlicher Index)
+        if getattr(df.index, "tz", None) is not None:
+            df.index = df.index.tz_localize(None)
+
         if "adjClose" in df.columns:
             s = df["adjClose"]
         else:
@@ -63,8 +77,14 @@ def fetch_single_ticker(ticker: str, start_date: str = "2025-01-01") -> pd.Serie
         return None
 
 
-def fetch_price_data(period: str = "3mo", delay: float = 0.3) -> pd.DataFrame:
-    """Lädt alle Ticker einzeln über Tiingo."""
+def fetch_price_data(period: str = "1y", delay: float = 0.3) -> pd.DataFrame:
+    """
+    Lädt alle Ticker einzeln über Tiingo.
+
+    period:
+      - wird hier vor allem für die Anzeige/Logs genutzt
+      - wir behalten bewusst genug Historie für YTD und 6M-Berechnungen
+    """
     print(f"Lade {len(ALL_TICKERS)} Ticker über Tiingo...\n")
 
     series_list = []
@@ -87,13 +107,9 @@ def fetch_price_data(period: str = "3mo", delay: float = 0.3) -> pd.DataFrame:
 
     closes = pd.concat(series_list, axis=1).sort_index()
 
-    # Letzte ~30 Tage (ohne deprecated .last())
-    if period == "1mo":
-        cutoff = closes.index.max() - pd.Timedelta(days=35)
-        closes = closes.loc[closes.index >= cutoff]
-    elif period == "3mo":
-        cutoff = closes.index.max() - pd.Timedelta(days=95)
-        closes = closes.loc[closes.index >= cutoff]
+    # Einheitliche Zeitzone / naive Timestamps
+    if getattr(closes.index, "tz", None) is not None:
+        closes.index = closes.index.tz_localize(None)
 
     print(f"\n✅ Erfolgreich: {len(closes.columns)} von {len(ALL_TICKERS)} Tickern")
     print(f"   Zeitraum: {closes.index.min().date()} → {closes.index.max().date()}")
