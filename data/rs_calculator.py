@@ -2,9 +2,16 @@ import pandas as pd
 import numpy as np
 from .tickers import TICKERS, BENCHMARK
 
+# Handelstage-Näherungen
+PERIODS = {
+    "1w": 5,
+    "1m": 21,
+    "3m": 63,
+    "1y": 252,
+}
+
 
 def _return(series: pd.Series, days: int) -> float | None:
-    """Performance über ca. N Handelstage."""
     s = series.dropna()
     if len(s) < days + 1:
         return None
@@ -23,7 +30,6 @@ def _ytd_return(series: pd.Series) -> float | None:
 
 
 def _rel_return(ticker_s: pd.Series, spy_s: pd.Series, days: int) -> float | None:
-    """Relative Performance vs SPY über N Handelstage."""
     aligned = pd.concat([ticker_s, spy_s], axis=1, join="inner").dropna()
     if aligned.shape[1] < 2 or len(aligned) < days + 1:
         return None
@@ -48,7 +54,6 @@ def _rel_ytd(ticker_s: pd.Series, spy_s: pd.Series) -> float | None:
 
 
 def _percentile(values: dict[str, float | None], ticker: str) -> float | None:
-    """Perzentil 0–100 innerhalb des Universums."""
     valid = {
         k: v
         for k, v in values.items()
@@ -70,17 +75,14 @@ def calculate_relative_strength(closes: pd.DataFrame) -> list[dict]:
     if BENCHMARK not in closes.columns:
         raise ValueError("SPY Benchmark fehlt in den Daten")
 
-    # Index ggf. timezone-naiv machen
     if getattr(closes.index, "tz", None) is not None:
         closes = closes.copy()
         closes.index = closes.index.tz_localize(None)
 
     spy = closes[BENCHMARK].dropna()
 
-    rel_1d_map: dict[str, float | None] = {}
-    rel_1w_map: dict[str, float | None] = {}
-    rel_1m_map: dict[str, float | None] = {}
-    rel_ytd_map: dict[str, float | None] = {}
+    # Maps für Perzentile (nur Relative)
+    rel_maps = {p: {} for p in list(PERIODS.keys()) + ["ytd"]}
 
     results: list[dict] = []
 
@@ -93,81 +95,58 @@ def calculate_relative_strength(closes: pd.DataFrame) -> list[dict]:
             if len(s) < 5:
                 continue
 
-            # Absolute Returns
-            abs_1d = _return(s, 1)
-            abs_1w = _return(s, 5)
-            abs_1m = _return(s, 21)
-            abs_ytd = _ytd_return(s)
+            row = {
+                "group": group_name,
+                "ticker": ticker,
+                "name": name,
+                "last_price": _round(float(s.iloc[-1])),
+            }
 
-            # Relative Returns vs SPY
-            r1d = _rel_return(s, spy, 1)
-            r1w = _rel_return(s, spy, 5)
-            r1m = _rel_return(s, spy, 21)
+            # Absolute
+            for key, days in PERIODS.items():
+                row[f"abs_{key}"] = _round(_return(s, days))
+            row["abs_ytd"] = _round(_ytd_return(s))
+
+            # Relative vs SPY
+            for key, days in PERIODS.items():
+                r = _rel_return(s, spy, days)
+                row[f"rel_{key}"] = _round(r)
+                rel_maps[key][ticker] = r
             rytd = _rel_ytd(s, spy)
+            row["rel_ytd"] = _round(rytd)
+            rel_maps["ytd"][ticker] = rytd
 
-            rel_1d_map[ticker] = r1d
-            rel_1w_map[ticker] = r1w
-            rel_1m_map[ticker] = r1m
-            rel_ytd_map[ticker] = rytd
-
-            # RS-Ratio (ca. 3 Monate, rebased auf 100)
+            # Sparkline: 1M RS-Ratio (rebased 100), letzte ~22 Punkte
             aligned = pd.concat([s, spy], axis=1, join="inner").dropna()
-            if len(aligned) < 10:
-                continue
-
-            t = aligned.iloc[:, 0]
-            b = aligned.iloc[:, 1]
-            window = min(63, len(t))
-            ratio = (t.iloc[-window:] / b.iloc[-window:]) * 100
-            ratio = ratio / ratio.iloc[0] * 100
-            rs_last = float(ratio.iloc[-1])
-
-            # Sparkline (letzte 22 Punkte, 0–100)
-            spark = ratio.tail(22).values
-            if len(spark) > 1 and spark.max() > spark.min():
-                spark_norm = ((spark - spark.min()) / (spark.max() - spark.min()) * 100).tolist()
+            if len(aligned) >= 10:
+                t = aligned.iloc[:, 0]
+                b = aligned.iloc[:, 1]
+                window = min(21, len(t))
+                ratio = (t.iloc[-window:] / b.iloc[-window:]) * 100
+                ratio = ratio / ratio.iloc[0] * 100
+                spark = ratio.tail(22).values
+                if len(spark) > 1 and spark.max() > spark.min():
+                    spark_norm = (
+                        (spark - spark.min()) / (spark.max() - spark.min()) * 100
+                    ).tolist()
+                else:
+                    spark_norm = [50.0] * max(len(spark), 1)
             else:
-                spark_norm = [50.0] * max(len(spark), 1)
+                spark_norm = []
 
-            results.append(
-                {
-                    "group": group_name,
-                    "ticker": ticker,
-                    "name": name,
-                    "last_price": _round(float(s.iloc[-1])),
-                    "abs_1d": _round(abs_1d),
-                    "abs_1w": _round(abs_1w),
-                    "abs_1m": _round(abs_1m),
-                    "abs_ytd": _round(abs_ytd),
-                    "rel_1d": _round(r1d),
-                    "rel_1w": _round(r1w),
-                    "rel_1m": _round(r1m),
-                    "rel_ytd": _round(rytd),
-                    "rs_last": _round(rs_last),
-                    "sparkline": spark_norm,
-                    # Perzentile werden nach dem Loop gesetzt
-                    "pct_rel_1d": None,
-                    "pct_rel_1w": None,
-                    "pct_rel_1m": None,
-                    "pct_rel_ytd": None,
-                    "pct_1m_ago": None,
-                    "pct_3m_ago": None,
-                    "pct_6m_ago": None,
-                }
-            )
+            row["sparkline"] = spark_norm
+            results.append(row)
 
-    # Perzentile auf Basis der Relative Returns
+    # Perzentile der relativen Werte
     for row in results:
         t = row["ticker"]
-        row["pct_rel_1d"] = _round(_percentile(rel_1d_map, t), 0)
-        row["pct_rel_1w"] = _round(_percentile(rel_1w_map, t), 0)
-        row["pct_rel_1m"] = _round(_percentile(rel_1m_map, t), 0)
-        row["pct_rel_ytd"] = _round(_percentile(rel_ytd_map, t), 0)
+        for key in list(PERIODS.keys()) + ["ytd"]:
+            row[f"pct_{key}"] = _round(_percentile(rel_maps[key], t), 0)
 
-    # Default-Sort: 1M Relative Performance absteigend
+    # Default-Sort: Rel 1M absteigend
     results = sorted(
         results,
-        key=lambda x: x["rel_1m"] if x["rel_1m"] is not None else -9999,
+        key=lambda x: x["rel_1m"] if x.get("rel_1m") is not None else -9999,
         reverse=True,
     )
     return results

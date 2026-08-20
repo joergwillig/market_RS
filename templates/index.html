@@ -58,52 +58,102 @@
         <table class="w-full text-sm">
             <thead class="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500">
                 <tr>
-                    <th class="px-3 py-3 font-semibold sticky left-0 bg-gray-50 z-10">{{ sort_link('ticker', 'Ticker') }}</th>
-                    <th class="px-3 py-3 font-semibold">{{ sort_link('name', 'Name') }}</th>
+                    <th class="px-3 py-3 font-semibold sticky left-0 bg-gray-50 z-10">
+                        {{ sort_link('ticker', 'Ticker') }}
+                    </th>
+                    <th class="px-3 py-3 font-semibold">
+                        {{ sort_link('name', 'Name') }}
+                    </th>
 
                     <!-- Absolute -->
-                    <th class="px-2 py-3 font-semibold text-right border-l border-gray-200">{{ sort_link('abs_1d', 'Abs 1D') }}</th>
-                    <th class="px-2 py-3 font-semibold text-right">{{ sort_link('abs_1w', 'Abs 1W') }}</th>
-                    <th class="px-2 py-3 font-semibold text-right">{{ sort_link('abs_1m', 'Abs 1M') }}</th>
-                    <th class="px-2 py-3 font-semibold text-right">{{ sort_link('abs_ytd', 'Abs YTD') }}</th>
+                    <th class="px-2 py-3 font-semibold text-right border-l border-gray-200">
+                        {{ sort_link('abs_1w', 'Abs 1W') }}
+                    </th>
+                    <th class="px-2 py-3 font-semibold text-right">
+                        {{ sort_link('abs_1m', 'Abs 1M') }}
+                    </th>
+                    <th class="px-2 py-3 font-semibold text-right">
+                        {{ sort_link('abs_3m', 'Abs 3M') }}
+                    </th>
+                    <th class="px-2 py-3 font-semibold text-right">
+                        {{ sort_link('abs_1y', 'Abs 1Y') }}
+                    </th>
+                    <th class="px-2 py-3 font-semibold text-right">
+                        {{ sort_link('abs_ytd', 'Abs YTD') }}
+                    </th>
 
                     <!-- Relative vs SPY -->
-                    <th class="px-2 py-3 font-semibold text-right border-l border-gray-200">{{ sort_link('rel_1d', 'Rel 1D') }}</th>
-                    <th class="px-2 py-3 font-semibold text-right">{{ sort_link('rel_1w', 'Rel 1W') }}</th>
-                    <th class="px-2 py-3 font-semibold text-right bg-blue-50">{{ sort_link('rel_1m', 'Rel 1M') }}</th>
-                    <th class="px-2 py-3 font-semibold text-right">{{ sort_link('rel_ytd', 'Rel YTD') }}</th>
+                    <th class="px-2 py-3 font-semibold text-right border-l border-gray-200">
+                        {{ sort_link('rel_1w', 'Rel 1W') }}
+                    </th>
+                    <th class="px-2 py-3 font-semibold text-right bg-blue-50">
+                        {{ sort_link('rel_1m', 'Rel 1M') }}
+                    </th>
+                    <th class="px-2 py-3 font-semibold text-right">
+                        {{ sort_link('rel_3m', 'Rel 3M') }}
+                    </th>
+                    <th class="px-2 py-3 font-semibold text-right">
+                        {{ sort_link('rel_1y', 'Rel 1Y') }}
+                    </th>
+                    <th class="px-2 py-3 font-semibold text-right">
+                        {{ sort_link('rel_ytd', 'Rel YTD') }}
+                    </th>
 
-                    <!-- RS / Percentile -->
-                    <th class="px-2 py-3 font-semibold text-right border-l border-gray-200">{{ sort_link('rs_last', 'RS') }}</th>
-                    <th class="px-2 py-3 font-semibold text-right">{{ sort_link('pct_rel_1m', 'Pct 1M') }}</th>
-                    <th class="px-2 py-3 font-semibold text-right">{{ sort_link('pct_rel_1d', 'Pct 1D') }}</th>
-                    <th class="px-2 py-3 font-semibold text-right">{{ sort_link('pct_rel_ytd', 'Pct YTD') }}</th>
+                    <!-- Percentiles of relative -->
+                    <th class="px-2 py-3 font-semibold text-right border-l border-gray-200">
+                        {{ sort_link('pct_1w', 'Pct 1W') }}
+                    </th>
+                    <th class="px-2 py-3 font-semibold text-right">
+                        {{ sort_link('pct_1m', 'Pct 1M') }}
+                    </th>
+                    <th class="px-2 py-3 font-semibold text-right">
+                        {{ sort_link('pct_3m', 'Pct 3M') }}
+                    </th>
+                    <th class="px-2 py-3 font-semibold text-right">
+                        {{ sort_link('pct_1y', 'Pct 1Y') }}
+                    </th>
+                    <th class="px-2 py-3 font-semibold text-right">
+                        {{ sort_link('pct_ytd', 'Pct YTD') }}
+                    </th>
 
                     <th class="px-3 py-3 font-semibold border-l border-gray-200">1M RS</th>
-                    <th class="px-3 py-3 font-semibold text-right">{{ sort_link('last_price', 'Price') }}</th>
+                    <th class="px-3 py-3 font-semibold text-right">
+                        {{ sort_link('last_price', 'Price') }}
+                    </th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
                 {% for item in data %}
                 <tr class="hover:bg-gray-50/80">
-                    <td class="px-3 py-2.5 font-semibold sticky left-0 bg-white z-10">{{ item.ticker }}</td>
-                    <td class="px-3 py-2.5 text-gray-600 whitespace-nowrap">{{ item.name }}</td>
+                    <td class="px-3 py-2.5 font-semibold sticky left-0 bg-white z-10">
+                        {{ item.ticker }}
+                    </td>
+                    <td class="px-3 py-2.5 text-gray-600 whitespace-nowrap">
+                        {{ item.name }}
+                    </td>
 
-                    <td class="px-2 py-2.5 text-right border-l border-gray-100">{{ pct_cell(item.abs_1d) }}</td>
-                    <td class="px-2 py-2.5 text-right">{{ pct_cell(item.abs_1w) }}</td>
+                    <!-- Absolute -->
+                    <td class="px-2 py-2.5 text-right border-l border-gray-100">{{ pct_cell(item.abs_1w) }}</td>
                     <td class="px-2 py-2.5 text-right">{{ pct_cell(item.abs_1m) }}</td>
+                    <td class="px-2 py-2.5 text-right">{{ pct_cell(item.abs_3m) }}</td>
+                    <td class="px-2 py-2.5 text-right">{{ pct_cell(item.abs_1y) }}</td>
                     <td class="px-2 py-2.5 text-right">{{ pct_cell(item.abs_ytd) }}</td>
 
-                    <td class="px-2 py-2.5 text-right border-l border-gray-100">{{ pct_cell(item.rel_1d) }}</td>
-                    <td class="px-2 py-2.5 text-right">{{ pct_cell(item.rel_1w) }}</td>
+                    <!-- Relative -->
+                    <td class="px-2 py-2.5 text-right border-l border-gray-100">{{ pct_cell(item.rel_1w) }}</td>
                     <td class="px-2 py-2.5 text-right bg-blue-50/40 font-semibold">{{ pct_cell(item.rel_1m) }}</td>
+                    <td class="px-2 py-2.5 text-right">{{ pct_cell(item.rel_3m) }}</td>
+                    <td class="px-2 py-2.5 text-right">{{ pct_cell(item.rel_1y) }}</td>
                     <td class="px-2 py-2.5 text-right">{{ pct_cell(item.rel_ytd) }}</td>
 
-                    <td class="px-2 py-2.5 text-right border-l border-gray-100">{{ num_cell(item.rs_last, 2) }}</td>
-                    <td class="px-2 py-2.5 text-right">{{ num_cell(item.pct_rel_1m, 0) }}</td>
-                    <td class="px-2 py-2.5 text-right">{{ num_cell(item.pct_rel_1d, 0) }}</td>
-                    <td class="px-2 py-2.5 text-right">{{ num_cell(item.pct_rel_ytd, 0) }}</td>
+                    <!-- Percentiles -->
+                    <td class="px-2 py-2.5 text-right border-l border-gray-100">{{ num_cell(item.pct_1w, 0) }}</td>
+                    <td class="px-2 py-2.5 text-right">{{ num_cell(item.pct_1m, 0) }}</td>
+                    <td class="px-2 py-2.5 text-right">{{ num_cell(item.pct_3m, 0) }}</td>
+                    <td class="px-2 py-2.5 text-right">{{ num_cell(item.pct_1y, 0) }}</td>
+                    <td class="px-2 py-2.5 text-right">{{ num_cell(item.pct_ytd, 0) }}</td>
 
+                    <!-- Sparkline 1M RS -->
                     <td class="px-3 py-2.5 border-l border-gray-100">
                         <svg class="h-6 w-28" viewBox="0 0 100 24" preserveAspectRatio="none">
                             {% if item.sparkline and item.sparkline|length > 1 %}
@@ -122,11 +172,14 @@
                             {% endif %}
                         </svg>
                     </td>
-                    <td class="px-3 py-2.5 text-right text-gray-700">{{ item.last_price }}</td>
+
+                    <td class="px-3 py-2.5 text-right text-gray-700">
+                        {{ item.last_price }}
+                    </td>
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="16" class="px-4 py-8 text-center text-gray-400">
+                    <td colspan="18" class="px-4 py-8 text-center text-gray-400">
                         Keine Daten geladen.
                     </td>
                 </tr>
@@ -137,6 +190,9 @@
 </div>
 
 <p class="mt-3 text-xs text-gray-400">
-    Rel = Ticker-Return minus SPY-Return · Pct = Perzentil im aktuellen Universum · Standard-Sortierung: Rel 1M
+    Rel = Ticker-Return minus SPY-Return ·
+    Pct = Perzentil der relativen Performance im Universum ·
+    1M RS = Sparkline des 1-Monats Relative-Strength-Verlaufs ·
+    Standard-Sortierung: Rel 1M
 </p>
 {% endblock %}
