@@ -116,7 +116,9 @@
                         {{ sort_link('pct_ytd', 'Pct YTD') }}
                     </th>
 
-                    <th class="px-3 py-3 font-semibold border-l border-gray-200">1M RS</th>
+                    <th class="px-3 py-3 font-semibold border-l border-gray-200 min-w-[7rem]">
+                        1M RS
+                    </th>
                     <th class="px-3 py-3 font-semibold text-right">
                         {{ sort_link('last_price', 'Price') }}
                     </th>
@@ -154,23 +156,21 @@
                     <td class="px-2 py-2.5 text-right">{{ num_cell(item.pct_ytd, 0) }}</td>
 
                     <!-- Sparkline 1M RS -->
-                    <td class="px-3 py-2.5 border-l border-gray-100">
-                        <svg class="h-6 w-28" viewBox="0 0 100 24" preserveAspectRatio="none">
-                            {% if item.sparkline and item.sparkline|length > 1 %}
+                    <td class="px-3 py-2.5 border-l border-gray-100 min-w-[7rem]">
+                        {% if item.sparkline and item.sparkline|length > 1 %}
+                        <svg class="h-6 w-28 block" viewBox="0 0 100 24" preserveAspectRatio="none">
                             <polyline
                                 fill="none"
                                 stroke="{% if item.rel_1m is not none and item.rel_1m >= 0 %}#16a34a{% else %}#dc2626{% endif %}"
                                 stroke-width="2"
-                                points="
-                                {% for i in range(item.sparkline|length) %}
-                                    {{ (i / (item.sparkline|length - 1) * 100)|round(1) }},
-                                    {{ (24 - item.sparkline[i] / 100 * 22)|round(1) }}
-                                    {% if not loop.last %} {% endif %}
-                                {% endfor %}
-                                "
+                                stroke-linejoin="round"
+                                stroke-linecap="round"
+                                points="{% for i in range(item.sparkline|length) %}{{ '%.1f'|format(i / (item.sparkline|length - 1) * 100) }},{{ '%.1f'|format(24 - item.sparkline[i] / 100 * 22) }}{% if not loop.last %} {% endif %}{% endfor %}"
                             />
-                            {% endif %}
                         </svg>
+                        {% else %}
+                        <span class="text-gray-300 text-xs">–</span>
+                        {% endif %}
                     </td>
 
                     <td class="px-3 py-2.5 text-right text-gray-700">

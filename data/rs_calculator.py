@@ -116,23 +116,22 @@ def calculate_relative_strength(closes: pd.DataFrame) -> list[dict]:
             row["rel_ytd"] = _round(rytd)
             rel_maps["ytd"][ticker] = rytd
 
-            # Sparkline: 1M RS-Ratio (rebased 100), letzte ~22 Punkte
+            # Sparkline: 1M RS-Ratio (rebased 100)
             aligned = pd.concat([s, spy], axis=1, join="inner").dropna()
-            if len(aligned) >= 10:
+            spark_norm = []
+            if len(aligned) >= 5:
                 t = aligned.iloc[:, 0]
                 b = aligned.iloc[:, 1]
                 window = min(21, len(t))
-                ratio = (t.iloc[-window:] / b.iloc[-window:]) * 100
-                ratio = ratio / ratio.iloc[0] * 100
-                spark = ratio.tail(22).values
-                if len(spark) > 1 and spark.max() > spark.min():
-                    spark_norm = (
-                        (spark - spark.min()) / (spark.max() - spark.min()) * 100
-                    ).tolist()
-                else:
-                    spark_norm = [50.0] * max(len(spark), 1)
-            else:
-                spark_norm = []
+                if window >= 2:
+                    ratio = (t.iloc[-window:] / b.iloc[-window:])
+                    ratio = ratio / ratio.iloc[0] * 100.0
+                    spark = ratio.values.astype(float)
+                    lo, hi = float(spark.min()), float(spark.max())
+                    if hi > lo:
+                        spark_norm = ((spark - lo) / (hi - lo) * 100.0).tolist()
+                    else:
+                        spark_norm = [50.0] * len(spark)
 
             row["sparkline"] = spark_norm
             results.append(row)
