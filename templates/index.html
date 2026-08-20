@@ -1,60 +1,119 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="mb-6">
-    <h1 class="text-2xl font-bold">Relative Strength Dashboard</h1>
-    <p class="text-sm text-gray-500">vs SPY · 1-Month · Last update: {{ last_update }}</p>
+<div class="mb-4">
+    <h1 class="text-2xl font-bold tracking-tight">Relative Strength Dashboard</h1>
+    <p class="text-sm text-gray-500">
+        vs SPY · Abs / Rel / Percentile · Last update: {{ last_update }}
+    </p>
 </div>
 
 <!-- Tabs -->
 <div class="flex gap-2 overflow-x-auto pb-3 mb-4">
-    <a href="/?group=all"
+    <a href="/?group=all&sort={{ sort }}&dir={{ dir }}"
        class="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap
-              {% if active_group == 'all' %}bg-blue-600 text-white{% else %}bg-white border{% endif %}">
+              {% if active_group == 'all' %}bg-blue-600 text-white{% else %}bg-white border border-gray-200{% endif %}">
         All
     </a>
     {% for g in groups %}
-    <a href="/?group={{ g }}"
+    <a href="/?group={{ g }}&sort={{ sort }}&dir={{ dir }}"
        class="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap
-              {% if active_group == g %}bg-blue-600 text-white{% else %}bg-white border{% endif %}">
+              {% if active_group == g %}bg-blue-600 text-white{% else %}bg-white border border-gray-200{% endif %}">
         {{ g.replace('_', ' ').title() }}
     </a>
     {% endfor %}
 </div>
 
-<!-- Table -->
-<div class="bg-white rounded-xl shadow-sm overflow-hidden">
+{% macro sort_link(col, label) -%}
+    {% set next_dir = 'asc' if sort == col and dir == 'desc' else 'desc' %}
+    <a href="/?group={{ active_group }}&sort={{ col }}&dir={{ next_dir }}"
+       class="inline-flex items-center gap-1 hover:text-blue-600 whitespace-nowrap">
+        {{ label }}
+        {% if sort == col %}
+            <span class="text-blue-600">{{ '▼' if dir == 'desc' else '▲' }}</span>
+        {% endif %}
+    </a>
+{%- endmacro %}
+
+{% macro pct_cell(val) -%}
+    {% if val is none %}
+        <span class="text-gray-300">–</span>
+    {% else %}
+        <span class="{% if val > 0 %}text-green-600{% elif val < 0 %}text-red-600{% else %}text-gray-700{% endif %} font-medium">
+            {{ "%+.2f"|format(val) }}%
+        </span>
+    {% endif %}
+{%- endmacro %}
+
+{% macro num_cell(val, digits=0) -%}
+    {% if val is none %}
+        <span class="text-gray-300">–</span>
+    {% else %}
+        {{ "%.0f"|format(val) if digits == 0 else ("%.2f"|format(val)) }}
+    {% endif %}
+{%- endmacro %}
+
+<div class="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
     <div class="overflow-x-auto">
         <table class="w-full text-sm">
-            <thead class="bg-gray-100 text-left">
+            <thead class="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500">
                 <tr>
-                    <th class="px-4 py-3 font-semibold">Ticker</th>
-                    <th class="px-4 py-3 font-semibold">Name</th>
-                    <th class="px-4 py-3 font-semibold text-right">Rel. Perf</th>
-                    <th class="px-4 py-3 font-semibold">1M RS</th>
-                    <th class="px-4 py-3 font-semibold text-right">Price</th>
+                    <th class="px-3 py-3 font-semibold sticky left-0 bg-gray-50 z-10">{{ sort_link('ticker', 'Ticker') }}</th>
+                    <th class="px-3 py-3 font-semibold">{{ sort_link('name', 'Name') }}</th>
+
+                    <!-- Absolute -->
+                    <th class="px-2 py-3 font-semibold text-right border-l border-gray-200">{{ sort_link('abs_1d', 'Abs 1D') }}</th>
+                    <th class="px-2 py-3 font-semibold text-right">{{ sort_link('abs_1w', 'Abs 1W') }}</th>
+                    <th class="px-2 py-3 font-semibold text-right">{{ sort_link('abs_1m', 'Abs 1M') }}</th>
+                    <th class="px-2 py-3 font-semibold text-right">{{ sort_link('abs_ytd', 'Abs YTD') }}</th>
+
+                    <!-- Relative vs SPY -->
+                    <th class="px-2 py-3 font-semibold text-right border-l border-gray-200">{{ sort_link('rel_1d', 'Rel 1D') }}</th>
+                    <th class="px-2 py-3 font-semibold text-right">{{ sort_link('rel_1w', 'Rel 1W') }}</th>
+                    <th class="px-2 py-3 font-semibold text-right bg-blue-50">{{ sort_link('rel_1m', 'Rel 1M') }}</th>
+                    <th class="px-2 py-3 font-semibold text-right">{{ sort_link('rel_ytd', 'Rel YTD') }}</th>
+
+                    <!-- RS / Percentile -->
+                    <th class="px-2 py-3 font-semibold text-right border-l border-gray-200">{{ sort_link('rs_last', 'RS') }}</th>
+                    <th class="px-2 py-3 font-semibold text-right">{{ sort_link('pct_rel_1m', 'Pct 1M') }}</th>
+                    <th class="px-2 py-3 font-semibold text-right">{{ sort_link('pct_rel_1d', 'Pct 1D') }}</th>
+                    <th class="px-2 py-3 font-semibold text-right">{{ sort_link('pct_rel_ytd', 'Pct YTD') }}</th>
+
+                    <th class="px-3 py-3 font-semibold border-l border-gray-200">1M RS</th>
+                    <th class="px-3 py-3 font-semibold text-right">{{ sort_link('last_price', 'Price') }}</th>
                 </tr>
             </thead>
-            <tbody class="divide-y">
+            <tbody class="divide-y divide-gray-100">
                 {% for item in data %}
-                <tr class="hover:bg-gray-50">
-                    <td class="px-4 py-3 font-medium">{{ item.ticker }}</td>
-                    <td class="px-4 py-3 text-gray-600">{{ item.name }}</td>
-                    <td class="px-4 py-3 text-right font-medium
-                        {% if item.rel_perf > 0 %}text-green-600{% else %}text-red-600{% endif %}">
-                        {{ "%+.2f"|format(item.rel_perf) }}%
-                    </td>
-                    <td class="px-4 py-3">
-                        <!-- Einfache Sparkline als SVG -->
-                        <svg class="sparkline w-28" viewBox="0 0 100 24" preserveAspectRatio="none">
-                            {% if item.sparkline %}
+                <tr class="hover:bg-gray-50/80">
+                    <td class="px-3 py-2.5 font-semibold sticky left-0 bg-white z-10">{{ item.ticker }}</td>
+                    <td class="px-3 py-2.5 text-gray-600 whitespace-nowrap">{{ item.name }}</td>
+
+                    <td class="px-2 py-2.5 text-right border-l border-gray-100">{{ pct_cell(item.abs_1d) }}</td>
+                    <td class="px-2 py-2.5 text-right">{{ pct_cell(item.abs_1w) }}</td>
+                    <td class="px-2 py-2.5 text-right">{{ pct_cell(item.abs_1m) }}</td>
+                    <td class="px-2 py-2.5 text-right">{{ pct_cell(item.abs_ytd) }}</td>
+
+                    <td class="px-2 py-2.5 text-right border-l border-gray-100">{{ pct_cell(item.rel_1d) }}</td>
+                    <td class="px-2 py-2.5 text-right">{{ pct_cell(item.rel_1w) }}</td>
+                    <td class="px-2 py-2.5 text-right bg-blue-50/40 font-semibold">{{ pct_cell(item.rel_1m) }}</td>
+                    <td class="px-2 py-2.5 text-right">{{ pct_cell(item.rel_ytd) }}</td>
+
+                    <td class="px-2 py-2.5 text-right border-l border-gray-100">{{ num_cell(item.rs_last, 2) }}</td>
+                    <td class="px-2 py-2.5 text-right">{{ num_cell(item.pct_rel_1m, 0) }}</td>
+                    <td class="px-2 py-2.5 text-right">{{ num_cell(item.pct_rel_1d, 0) }}</td>
+                    <td class="px-2 py-2.5 text-right">{{ num_cell(item.pct_rel_ytd, 0) }}</td>
+
+                    <td class="px-3 py-2.5 border-l border-gray-100">
+                        <svg class="h-6 w-28" viewBox="0 0 100 24" preserveAspectRatio="none">
+                            {% if item.sparkline and item.sparkline|length > 1 %}
                             <polyline
                                 fill="none"
-                                stroke="{% if item.rel_perf >= 0 %}#16a34a{% else %}#dc2626{% endif %}"
+                                stroke="{% if item.rel_1m is not none and item.rel_1m >= 0 %}#16a34a{% else %}#dc2626{% endif %}"
                                 stroke-width="2"
                                 points="
                                 {% for i in range(item.sparkline|length) %}
-                                    {{ (i / (item.sparkline|length - 1 or 1) * 100)|round(1) }},
+                                    {{ (i / (item.sparkline|length - 1) * 100)|round(1) }},
                                     {{ (24 - item.sparkline[i] / 100 * 22)|round(1) }}
                                     {% if not loop.last %} {% endif %}
                                 {% endfor %}
@@ -63,11 +122,21 @@
                             {% endif %}
                         </svg>
                     </td>
-                    <td class="px-4 py-3 text-right">{{ item.last_price }}</td>
+                    <td class="px-3 py-2.5 text-right text-gray-700">{{ item.last_price }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="16" class="px-4 py-8 text-center text-gray-400">
+                        Keine Daten geladen.
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>
         </table>
     </div>
 </div>
+
+<p class="mt-3 text-xs text-gray-400">
+    Rel = Ticker-Return minus SPY-Return · Pct = Perzentil im aktuellen Universum · Standard-Sortierung: Rel 1M
+</p>
 {% endblock %}
