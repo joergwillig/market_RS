@@ -1,17 +1,23 @@
 <!DOCTYPE html>
-<html lang="de" class="h-full">
+<html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Market RS Dashboard</title>
+    <title>Relative Strength Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/htmx.org@2.0.4"></script>
     <style>
-        .sparkline { height: 24px; }
+        /* Tabelle darf breit werden und horizontal scrollen */
+        .table-scroll {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        table.rs-table {
+            min-width: 1400px;
+        }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-900 min-h-full">
-    <div class="max-w-6xl mx-auto px-3 py-4">
+<body class="bg-gray-50 text-gray-900 min-h-screen">
+    <div class="max-w-[1600px] mx-auto px-3 py-6 sm:px-6">
         {% block content %}{% endblock %}
     </div>
 </body>
