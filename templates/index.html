@@ -8,12 +8,16 @@
     </p>
 </div>
 
-<!-- Tabs -->
 <div class="flex gap-2 overflow-x-auto pb-3 mb-4">
     <a href="/?group=all&sort={{ sort }}&dir={{ dir }}"
        class="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap
               {% if active_group == 'all' %}bg-blue-600 text-white{% else %}bg-white border border-gray-200{% endif %}">
         All
+    </a>
+    <a href="/?group=movers"
+       class="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap
+              {% if active_group == 'movers' %}bg-blue-600 text-white{% else %}bg-white border border-gray-200{% endif %}">
+        Movers
     </a>
     {% for g in groups %}
     <a href="/?group={{ g }}&sort={{ sort }}&dir={{ dir }}"
@@ -53,79 +57,74 @@
     {% endif %}
 {%- endmacro %}
 
+{% macro rs_table(rows, show_sort=True) %}
 <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
     <div class="table-scroll">
         <table class="rs-table w-full text-sm">
             <thead class="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500">
                 <tr>
                     <th class="px-3 py-3 font-semibold sticky left-0 bg-gray-50 z-10">
-                        {{ sort_link('ticker', 'Ticker') }}
+                        {% if show_sort %}{{ sort_link('ticker', 'Ticker') }}{% else %}Ticker{% endif %}
                     </th>
                     <th class="px-3 py-3 font-semibold">
-                        {{ sort_link('name', 'Name') }}
+                        {% if show_sort %}{{ sort_link('name', 'Name') }}{% else %}Name{% endif %}
                     </th>
-
-                    <!-- Absolute -->
                     <th class="px-2 py-3 font-semibold text-right border-l border-gray-200">
-                        {{ sort_link('abs_1w', 'Abs 1W') }}
+                        {% if show_sort %}{{ sort_link('abs_1w', 'Abs 1W') }}{% else %}Abs 1W{% endif %}
                     </th>
                     <th class="px-2 py-3 font-semibold text-right">
-                        {{ sort_link('abs_1m', 'Abs 1M') }}
+                        {% if show_sort %}{{ sort_link('abs_1m', 'Abs 1M') }}{% else %}Abs 1M{% endif %}
                     </th>
                     <th class="px-2 py-3 font-semibold text-right">
-                        {{ sort_link('abs_3m', 'Abs 3M') }}
+                        {% if show_sort %}{{ sort_link('abs_3m', 'Abs 3M') }}{% else %}Abs 3M{% endif %}
                     </th>
                     <th class="px-2 py-3 font-semibold text-right">
-                        {{ sort_link('abs_1y', 'Abs 1Y') }}
+                        {% if show_sort %}{{ sort_link('abs_1y', 'Abs 1Y') }}{% else %}Abs 1Y{% endif %}
                     </th>
                     <th class="px-2 py-3 font-semibold text-right">
-                        {{ sort_link('abs_ytd', 'Abs YTD') }}
+                        {% if show_sort %}{{ sort_link('abs_ytd', 'Abs YTD') }}{% else %}Abs YTD{% endif %}
                     </th>
-
-                    <!-- Relative vs SPY -->
                     <th class="px-2 py-3 font-semibold text-right border-l border-gray-200">
-                        {{ sort_link('rel_1w', 'Rel 1W') }}
+                        {% if show_sort %}{{ sort_link('rel_1w', 'Rel 1W') }}{% else %}Rel 1W{% endif %}
                     </th>
                     <th class="px-2 py-3 font-semibold text-right bg-blue-50">
-                        {{ sort_link('rel_1m', 'Rel 1M') }}
+                        {% if show_sort %}{{ sort_link('rel_1m', 'Rel 1M') }}{% else %}Rel 1M{% endif %}
+                    </th>
+                    <th class="px-2 py-3 font-semibold text-right bg-amber-50">
+                        {% if show_sort %}{{ sort_link('rel_1m_chg', 'Δ Rel 1M') }}{% else %}Δ Rel 1M{% endif %}
                     </th>
                     <th class="px-2 py-3 font-semibold text-right">
-                        {{ sort_link('rel_3m', 'Rel 3M') }}
+                        {% if show_sort %}{{ sort_link('rel_3m', 'Rel 3M') }}{% else %}Rel 3M{% endif %}
                     </th>
                     <th class="px-2 py-3 font-semibold text-right">
-                        {{ sort_link('rel_1y', 'Rel 1Y') }}
+                        {% if show_sort %}{{ sort_link('rel_1y', 'Rel 1Y') }}{% else %}Rel 1Y{% endif %}
                     </th>
                     <th class="px-2 py-3 font-semibold text-right">
-                        {{ sort_link('rel_ytd', 'Rel YTD') }}
+                        {% if show_sort %}{{ sort_link('rel_ytd', 'Rel YTD') }}{% else %}Rel YTD{% endif %}
                     </th>
-
-                    <!-- Percentiles -->
                     <th class="px-2 py-3 font-semibold text-right border-l border-gray-200">
-                        {{ sort_link('pct_1w', 'Pct 1W') }}
+                        {% if show_sort %}{{ sort_link('pct_1w', 'Pct 1W') }}{% else %}Pct 1W{% endif %}
                     </th>
                     <th class="px-2 py-3 font-semibold text-right">
-                        {{ sort_link('pct_1m', 'Pct 1M') }}
+                        {% if show_sort %}{{ sort_link('pct_1m', 'Pct 1M') }}{% else %}Pct 1M{% endif %}
                     </th>
                     <th class="px-2 py-3 font-semibold text-right">
-                        {{ sort_link('pct_3m', 'Pct 3M') }}
+                        {% if show_sort %}{{ sort_link('pct_3m', 'Pct 3M') }}{% else %}Pct 3M{% endif %}
                     </th>
                     <th class="px-2 py-3 font-semibold text-right">
-                        {{ sort_link('pct_1y', 'Pct 1Y') }}
+                        {% if show_sort %}{{ sort_link('pct_1y', 'Pct 1Y') }}{% else %}Pct 1Y{% endif %}
                     </th>
                     <th class="px-2 py-3 font-semibold text-right">
-                        {{ sort_link('pct_ytd', 'Pct YTD') }}
+                        {% if show_sort %}{{ sort_link('pct_ytd', 'Pct YTD') }}{% else %}Pct YTD{% endif %}
                     </th>
-
-                    <th class="px-3 py-3 font-semibold border-l border-gray-200 min-w-[7rem]">
-                        1M RS
-                    </th>
+                    <th class="px-3 py-3 font-semibold border-l border-gray-200 min-w-[7rem]">1M RS</th>
                     <th class="px-3 py-3 font-semibold text-right">
-                        {{ sort_link('last_price', 'Price') }}
+                        {% if show_sort %}{{ sort_link('last_price', 'Price') }}{% else %}Price{% endif %}
                     </th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
-                {% for item in data %}
+                {% for item in rows %}
                 <tr class="hover:bg-gray-50/80">
                     <td class="px-3 py-2.5 font-semibold sticky left-0 bg-white z-10">
                         <a href="https://elite.finviz.com/stock?t={{ item.ticker }}&p=d"
@@ -136,36 +135,29 @@
                         </a>
                     </td>
                     <td class="px-3 py-2.5 text-gray-600 whitespace-nowrap">
-                        <a href=href="https://elite.finviz.com/screener?v=211&p=d&f=etf_heldby_{{ item.ticker }}&ft=5&ta=0&o=-perf52w"
+                        <a href="https://elite.finviz.com/screener?v=211&p=d&f=etf_heldby_{{ item.ticker }}&ft=5&ta=0&o=-perf52w"
                            target="_blank"
                            rel="noopener noreferrer"
                            class="text-gray-700 hover:text-blue-700 hover:underline">
                             {{ item.name }}
                         </a>
                     </td>
-
-                    <!-- Absolute -->
                     <td class="px-2 py-2.5 text-right border-l border-gray-100">{{ pct_cell(item.abs_1w) }}</td>
                     <td class="px-2 py-2.5 text-right">{{ pct_cell(item.abs_1m) }}</td>
                     <td class="px-2 py-2.5 text-right">{{ pct_cell(item.abs_3m) }}</td>
                     <td class="px-2 py-2.5 text-right">{{ pct_cell(item.abs_1y) }}</td>
                     <td class="px-2 py-2.5 text-right">{{ pct_cell(item.abs_ytd) }}</td>
-
-                    <!-- Relative -->
                     <td class="px-2 py-2.5 text-right border-l border-gray-100">{{ pct_cell(item.rel_1w) }}</td>
                     <td class="px-2 py-2.5 text-right bg-blue-50/40 font-semibold">{{ pct_cell(item.rel_1m) }}</td>
+                    <td class="px-2 py-2.5 text-right bg-amber-50/40 font-semibold">{{ pct_cell(item.rel_1m_chg) }}</td>
                     <td class="px-2 py-2.5 text-right">{{ pct_cell(item.rel_3m) }}</td>
                     <td class="px-2 py-2.5 text-right">{{ pct_cell(item.rel_1y) }}</td>
                     <td class="px-2 py-2.5 text-right">{{ pct_cell(item.rel_ytd) }}</td>
-
-                    <!-- Percentiles -->
                     <td class="px-2 py-2.5 text-right border-l border-gray-100">{{ num_cell(item.pct_1w, 0) }}</td>
                     <td class="px-2 py-2.5 text-right">{{ num_cell(item.pct_1m, 0) }}</td>
                     <td class="px-2 py-2.5 text-right">{{ num_cell(item.pct_3m, 0) }}</td>
                     <td class="px-2 py-2.5 text-right">{{ num_cell(item.pct_1y, 0) }}</td>
                     <td class="px-2 py-2.5 text-right">{{ num_cell(item.pct_ytd, 0) }}</td>
-
-                    <!-- Sparkline -->
                     <td class="px-3 py-2.5 border-l border-gray-100 min-w-[7rem]">
                         {% if item.sparkline and item.sparkline|length > 1 %}
                         <svg class="h-6 w-28 block" viewBox="0 0 100 24" preserveAspectRatio="none">
@@ -182,14 +174,13 @@
                         <span class="text-gray-300 text-xs">–</span>
                         {% endif %}
                     </td>
-
                     <td class="px-3 py-2.5 text-right text-gray-700">
                         {{ item.last_price }}
                     </td>
                 </tr>
                 {% else %}
                 <tr>
-                    <td colspan="18" class="px-4 py-8 text-center text-gray-400">
+                    <td colspan="20" class="px-4 py-8 text-center text-gray-400">
                         Keine Daten geladen.
                     </td>
                 </tr>
@@ -198,9 +189,28 @@
         </table>
     </div>
 </div>
+{% endmacro %}
+
+{% if active_group == 'movers' %}
+<div class="mb-8">
+    <h2 class="text-lg font-semibold mb-3">Top 5 Movers · Δ Rel 1M</h2>
+    {{ rs_table(movers_top5, show_sort=False) }}
+</div>
+<div class="mb-8">
+    <h2 class="text-lg font-semibold mb-3">Industry Top 10</h2>
+    {{ rs_table(movers_industry, show_sort=False) }}
+</div>
+<div class="mb-8">
+    <h2 class="text-lg font-semibold mb-3">Country Top 10</h2>
+    {{ rs_table(movers_countries, show_sort=False) }}
+</div>
+{% else %}
+{{ rs_table(data, show_sort=True) }}
+{% endif %}
 
 <p class="mt-3 text-xs text-gray-400">
-    Ticker → Finviz Stock · Name → Finviz Chart-Übersicht (etf_heldby) ·
-    Rel = vs SPY · Pct = Perzentil im Universum · Standard-Sortierung: Rel 1M
+    Ticker → Finviz Stock · Name → Finviz Holdings sortiert nach 52W ·
+    Rel = vs SPY · Δ Rel 1M = Rel 1M heute minus Rel 1M vor 1 Woche ·
+    Pct = Perzentil im Universum
 </p>
 {% endblock %}

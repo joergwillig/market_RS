@@ -1,10 +1,49 @@
 TICKERS = {
+    "sectors": {
+        "XBI": "Biotech",
+        "XSD": "Semiconductor",
+        "XAR": "Aerospace & Defence",
+        "XOP": "Oil & Gas Exploration",
+        "XES": "Oil & Gas Equipment",
+        "XME": "Metal & Mining",
+        "XHB": "Homebuilders",
+        "XRT": "Retail",
+        "XHS": "Health Care Services",
+        "XHE": "Healthcare Equipment",
+        "XPH": "Pharmaceuticals",
+        "KBE": "US Banks",
+        "KRE": "Regional Banks",
+        "KCE": "Capital Markets",
+        "KIE": "Insurance",
+        "COPX": "Copper Miners",
+        "SLX": "Steel",
+        "JETS": "Airlines",
+        "PBW": "Clean Energy",
+        "ROBO": "Robotics & Automation",
+        "DRIV": "Automation & EV",
+        "WCLD": "Cloud Computing",
+        "CIBR": "Cyber Security",
+        "BLOK": "Crypto Related",
+        "USO": "United States Oil",
+        "FCG": "Natural Gas",
+        "GNR": "Natural Resources",
+        "MOO": "Agribusiness",
+        "PAVE": "Global Infrastructure",
+        "BOAT": "Global Shipping",
+        "IBUY": "Online Retail",
+        "PEJ": "Leisure & Entertainment",
+        "XSW": "Software & Services",
+        "XTL": "Telecom",
+        "XTN": "Transportation",
+        "IPAY": "Mobile Payment",
+        "PBJ": "Food & Beverage",
+    },
     "equal_weight": {
         "RSPT": "Technology",
         "RSPD": "Consumer Discretionary",
         "RSPC": "Communication",
         "RSPR": "Real Estate",
-        "RSP":  "S&P 500 Equal Weight",
+        "RSP": "S&P 500 Equal Weight",
         "RSPH": "Healthcare",
         "RSPN": "Industrial",
         "RSPF": "Financial",
@@ -57,7 +96,8 @@ TICKERS = {
 
 BENCHMARK = "SPY"
 ALL_TICKERS = (
-    list(TICKERS["equal_weight"].keys())
+    list(TICKERS["sectors"].keys())
+    + list(TICKERS["equal_weight"].keys())
     + list(TICKERS["countries"].keys())
     + [BENCHMARK]
 )

@@ -31,7 +31,6 @@ def verify_password(credentials: HTTPBasicCredentials = Depends(security)):
     correct_username = os.getenv("APP_USERNAME", "admin")
     correct_password = os.getenv("APP_PASSWORD")
 
-    # Wenn kein Passwort gesetzt ist: kein Schutz (nur Dev)
     if not correct_password:
         return credentials.username
 
@@ -94,8 +93,26 @@ async def index(
     username: str = Depends(verify_password),
 ):
     data = list(_cache["data"] or [])
+    movers_top5 = []
+    movers_industry = []
+    movers_countries = []
 
-    if group != "all":
+    if group == "movers":
+        sort = "rel_1m_chg"
+        dir = "desc"
+
+        def by_chg(rows):
+            return sorted(
+                [r for r in rows if r.get("rel_1m_chg") is not None],
+                key=lambda x: x["rel_1m_chg"],
+                reverse=True,
+            )
+
+        movers_industry = by_chg([d for d in data if d["group"] == "sectors"])[:10]
+        movers_countries = by_chg([d for d in data if d["group"] == "countries"])[:10]
+        movers_top5 = by_chg(data)[:5]
+        data = []
+    elif group != "all":
         data = [d for d in data if d["group"] == group]
 
     reverse = dir != "asc"
@@ -120,6 +137,9 @@ async def index(
             "active_group": group,
             "sort": sort,
             "dir": dir,
+            "movers_top5": movers_top5,
+            "movers_industry": movers_industry,
+            "movers_countries": movers_countries,
             "last_update": _cache["timestamp"].strftime("%Y-%m-%d %H:%M")
             if _cache["timestamp"]
             else "-",
