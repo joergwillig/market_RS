@@ -9,23 +9,31 @@
 </div>
 
 <div class="flex gap-2 overflow-x-auto pb-3 mb-4">
-    <a href="/?group=all&sort={{ sort }}&dir={{ dir }}"
-       class="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap
-              {% if active_group == 'all' %}bg-blue-600 text-white{% else %}bg-white border border-gray-200{% endif %}">
-        All
-    </a>
     <a href="/?group=movers"
        class="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap
               {% if active_group == 'movers' %}bg-blue-600 text-white{% else %}bg-white border border-gray-200{% endif %}">
         Movers
     </a>
-    {% for g in groups %}
-    <a href="/?group={{ g }}&sort={{ sort }}&dir={{ dir }}"
+    <a href="/?group=sectors&sort=rel_1m&dir=desc"
        class="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap
-              {% if active_group == g %}bg-blue-600 text-white{% else %}bg-white border border-gray-200{% endif %}">
-        {{ g.replace('_', ' ').title() }}
+              {% if active_group == 'sectors' %}bg-blue-600 text-white{% else %}bg-white border border-gray-200{% endif %}">
+        Sectors
     </a>
-    {% endfor %}
+    <a href="/?group=countries&sort=rel_1m&dir=desc"
+       class="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap
+              {% if active_group == 'countries' %}bg-blue-600 text-white{% else %}bg-white border border-gray-200{% endif %}">
+        Countries
+    </a>
+    <a href="/?group=equal_weight&sort=rel_1m&dir=desc"
+       class="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap
+              {% if active_group == 'equal_weight' %}bg-blue-600 text-white{% else %}bg-white border border-gray-200{% endif %}">
+        Equal Weight
+    </a>
+    <a href="/?group=all&sort=rel_1m&dir=desc"
+       class="px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap
+              {% if active_group == 'all' %}bg-blue-600 text-white{% else %}bg-white border border-gray-200{% endif %}">
+        All
+    </a>
 </div>
 
 {% macro sort_link(col, label) -%}
