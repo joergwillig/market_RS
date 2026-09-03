@@ -202,15 +202,15 @@
 {% if active_group == 'movers' %}
 <div class="mb-8">
     <h2 class="text-lg font-semibold mb-3">Top 5 Movers · Δ Rel 1M</h2>
-    {{ rs_table(movers_top5, show_sort=False) }}
+    {{ rs_table(movers_top5, show_sort=True) }}
 </div>
 <div class="mb-8">
     <h2 class="text-lg font-semibold mb-3">Industry Top 10</h2>
-    {{ rs_table(movers_industry, show_sort=False) }}
+    {{ rs_table(movers_industry, show_sort=True) }}
 </div>
 <div class="mb-8">
     <h2 class="text-lg font-semibold mb-3">Country Top 10</h2>
-    {{ rs_table(movers_countries, show_sort=False) }}
+    {{ rs_table(movers_countries, show_sort=True) }}
 </div>
 {% else %}
 {{ rs_table(data, show_sort=True) }}
@@ -218,7 +218,7 @@
 
 <p class="mt-3 text-xs text-gray-400">
     Ticker → Finviz Stock · Name → Finviz Holdings sortiert nach 52W ·
-    Rel = vs SPY · Δ Rel 1M = Rel 1M heute minus Rel 1M vor 1 Woche ·
+    Rel = vs SPY · Δ Rel 1M = Rel 1M heute minus Rel 1M vor 1 Monat ·
     Pct = Perzentil im Universum
 </p>
 {% endblock %}

@@ -98,19 +98,20 @@ async def index(
     movers_countries = []
 
     if group == "movers":
-        sort = "rel_1m_chg"
-        dir = "desc"
+        if "sort" not in request.query_params:
+            sort = "rel_1m_chg"
+            dir = "desc"
 
-        def by_chg(rows):
+        def top_chg(rows, n):
             return sorted(
                 [r for r in rows if r.get("rel_1m_chg") is not None],
                 key=lambda x: x["rel_1m_chg"],
                 reverse=True,
-            )
+            )[:n]
 
-        movers_industry = by_chg([d for d in data if d["group"] == "sectors"])[:10]
-        movers_countries = by_chg([d for d in data if d["group"] == "countries"])[:10]
-        movers_top5 = by_chg(data)[:5]
+        movers_industry = top_chg([d for d in data if d["group"] == "sectors"], 10)
+        movers_countries = top_chg([d for d in data if d["group"] == "countries"], 10)
+        movers_top5 = top_chg(data, 5)
         data = []
     elif group != "all":
         data = [d for d in data if d["group"] == group]
@@ -125,6 +126,9 @@ async def index(
 
     try:
         data = sorted(data, key=key_fn, reverse=reverse)
+        movers_top5 = sorted(movers_top5, key=key_fn, reverse=reverse)
+        movers_industry = sorted(movers_industry, key=key_fn, reverse=reverse)
+        movers_countries = sorted(movers_countries, key=key_fn, reverse=reverse)
     except Exception:
         pass
 
