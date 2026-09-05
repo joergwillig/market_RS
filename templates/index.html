@@ -270,11 +270,21 @@
             <thead class="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500">
                 <tr>
                     <th class="px-3 py-3 font-semibold">Ticker</th>
-                    <th class="px-3 py-3 font-semibold text-right">Jahr</th>
-                    <th class="px-3 py-3 font-semibold text-right">Quartal</th>
-                    <th class="px-3 py-3 font-semibold text-right">Monat</th>
-                    <th class="px-3 py-3 font-semibold text-right">Woche</th>
-                    <th class="px-3 py-3 font-semibold text-right">Volume</th>
+                    <th class="px-3 py-3 font-semibold text-right">
+                        {% if header_urls.jahr %}<a href="{{ header_urls.jahr }}" target="_blank" rel="noopener noreferrer" class="hover:text-blue-600 hover:underline">Jahr</a>{% else %}Jahr{% endif %}
+                    </th>
+                    <th class="px-3 py-3 font-semibold text-right">
+                        {% if header_urls.quartal %}<a href="{{ header_urls.quartal }}" target="_blank" rel="noopener noreferrer" class="hover:text-blue-600 hover:underline">Quartal</a>{% else %}Quartal{% endif %}
+                    </th>
+                    <th class="px-3 py-3 font-semibold text-right">
+                        {% if header_urls.monat %}<a href="{{ header_urls.monat }}" target="_blank" rel="noopener noreferrer" class="hover:text-blue-600 hover:underline">Monat</a>{% else %}Monat{% endif %}
+                    </th>
+                    <th class="px-3 py-3 font-semibold text-right">
+                        {% if header_urls.woche %}<a href="{{ header_urls.woche }}" target="_blank" rel="noopener noreferrer" class="hover:text-blue-600 hover:underline">Woche</a>{% else %}Woche{% endif %}
+                    </th>
+                    <th class="px-3 py-3 font-semibold text-right">
+                        {% if header_urls.volume %}<a href="{{ header_urls.volume }}" target="_blank" rel="noopener noreferrer" class="hover:text-blue-600 hover:underline">Volume</a>{% else %}Volume{% endif %}
+                    </th>
                     <th class="px-3 py-3 font-semibold text-right">Total</th>
                 </tr>
             </thead>
