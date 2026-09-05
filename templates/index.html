@@ -65,13 +65,28 @@
     {% endif %}
 {%- endmacro %}
 
+{% macro heat_cell(val, extra='') -%}
+    {# 0–100 Heatmap: rot (schwach) → amber → grün (stark), nur dezente Zellfarbe #}
+    {% if val is none %}
+        <td class="px-2 py-2.5 text-right {{ extra }}">
+            <span class="text-gray-300">–</span>
+        </td>
+    {% else %}
+        {% set hue = (val * 1.2)|round|int %}
+        <td class="px-2 py-2.5 text-right font-medium {{ extra }}"
+            style="background-color: hsl({{ hue }}, 58%, 94%); color: hsl({{ hue }}, 48%, 28%);">
+            {{ "%.0f"|format(val) }}
+        </td>
+    {% endif %}
+{%- endmacro %}
+
 {% macro rs_table(rows, show_sort=True) %}
 <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100">
     <div class="table-scroll">
         <table class="rs-table w-full text-sm">
             <thead class="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500">
                 <tr>
-                    <th class="px-3 py-3 font-semibold sticky left-0 bg-gray-50 z-10">
+                   <th class="px-3 py-3 font-semibold col-sticky">
                         {% if show_sort %}{{ sort_link('ticker', 'Ticker') }}{% else %}Ticker{% endif %}
                     </th>
                     <th class="px-3 py-3 font-semibold">
@@ -126,15 +141,13 @@
                         {% if show_sort %}{{ sort_link('pct_ytd', 'Pct YTD') }}{% else %}Pct YTD{% endif %}
                     </th>
                     <th class="px-3 py-3 font-semibold border-l border-gray-200 min-w-[7rem]">1M RS</th>
-                    <th class="px-3 py-3 font-semibold text-right">
-                        {% if show_sort %}{{ sort_link('last_price', 'Price') }}{% else %}Price{% endif %}
-                    </th>
+                    <th class="px-3 py-3 font-semibold border-l border-gray-200 min-w-[10rem]">6M RS</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
                 {% for item in rows %}
                 <tr class="hover:bg-gray-50/80">
-                    <td class="px-3 py-2.5 font-semibold sticky left-0 bg-white z-10">
+                    <td class="px-3 py-2.5 font-semibold col-sticky">
                         <a href="https://elite.finviz.com/stock?t={{ item.ticker }}&p=d"
                            target="_blank"
                            rel="noopener noreferrer"
@@ -161,11 +174,11 @@
                     <td class="px-2 py-2.5 text-right">{{ pct_cell(item.rel_3m) }}</td>
                     <td class="px-2 py-2.5 text-right">{{ pct_cell(item.rel_1y) }}</td>
                     <td class="px-2 py-2.5 text-right">{{ pct_cell(item.rel_ytd) }}</td>
-                    <td class="px-2 py-2.5 text-right border-l border-gray-100">{{ num_cell(item.pct_1w, 0) }}</td>
-                    <td class="px-2 py-2.5 text-right">{{ num_cell(item.pct_1m, 0) }}</td>
-                    <td class="px-2 py-2.5 text-right">{{ num_cell(item.pct_3m, 0) }}</td>
-                    <td class="px-2 py-2.5 text-right">{{ num_cell(item.pct_1y, 0) }}</td>
-                    <td class="px-2 py-2.5 text-right">{{ num_cell(item.pct_ytd, 0) }}</td>
+                    {{ heat_cell(item.pct_1w, 'border-l border-gray-100') }}
+                    {{ heat_cell(item.pct_1m) }}
+                    {{ heat_cell(item.pct_3m) }}
+                    {{ heat_cell(item.pct_1y) }}
+                    {{ heat_cell(item.pct_ytd) }}
                     <td class="px-3 py-2.5 border-l border-gray-100 min-w-[7rem]">
                         {% if item.sparkline and item.sparkline|length > 1 %}
                         <svg class="h-6 w-28 block" viewBox="0 0 100 24" preserveAspectRatio="none">
@@ -182,8 +195,36 @@
                         <span class="text-gray-300 text-xs">–</span>
                         {% endif %}
                     </td>
-                    <td class="px-3 py-2.5 text-right text-gray-700">
-                        {{ item.last_price }}
+                    <td class="px-3 py-2.5 border-l border-gray-100">
+                        {% if item.rs_bars and item.rs_bars|length > 1 %}
+                        <svg class="h-7 w-36 block"
+                             viewBox="0 0 {{ item.rs_bar_width }} {{ item.rs_bar_height }}"
+                             preserveAspectRatio="none"
+                             role="img"
+                             aria-label="6M chart of 1M relative strength">
+                            <line
+                                x1="0"
+                                y1="{{ item.rs_bar_height / 2 }}"
+                                x2="{{ item.rs_bar_width }}"
+                                y2="{{ item.rs_bar_height / 2 }}"
+                                stroke="#d1d5db"
+                                stroke-width="0.6"
+                            />
+                            {% for bar in item.rs_bars %}
+                            <rect
+                                x="{{ bar.x }}"
+                                y="{{ bar.y }}"
+                                width="{{ bar.w }}"
+                                height="{{ bar.h }}"
+                                fill="{% if bar.up %}#16a34a{% else %}#dc2626{% endif %}"
+                            >
+                                <title>RS {{ '%.3f'|format(bar.v) }}</title>
+                            </rect>
+                            {% endfor %}
+                        </svg>
+                        {% else %}
+                        <span class="text-gray-300 text-xs">–</span>
+                        {% endif %}
                     </td>
                 </tr>
                 {% else %}
@@ -219,6 +260,8 @@
 <p class="mt-3 text-xs text-gray-400">
     Ticker → Finviz Stock · Name → Finviz Holdings sortiert nach 52W ·
     Rel = vs SPY · Δ Rel 1M = Rel 1M heute minus Rel 1M vor 1 Monat ·
-    Pct = Perzentil im Universum
+    Pct = Perzentil im Universum (Heatmap 0 rot → 100 grün) ·
+    6M RS = rollierende 1M-RS-Ratio der letzten ~6 Monate
+    (grün = Ratio ≥ 1 vs SPY, rot = Ratio &lt; 1)
 </p>
 {% endblock %}

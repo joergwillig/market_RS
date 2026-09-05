@@ -9,6 +9,12 @@ PERIODS = {
     "1y": 252,
 }
 
+# 6M Handelslage für das 1M-RS-Balkensparkline (~126 Handelstage)
+RS_BAR_LOOKBACK = 21
+RS_BAR_HISTORY = 126
+RS_BAR_WIDTH = 140
+RS_BAR_HEIGHT = 28
+
 
 def _return(series: pd.Series, days: int) -> float | None:
     s = series.dropna()
@@ -83,6 +89,74 @@ def _round(v: float | None, digits: int = 2) -> float | None:
     return round(float(v), digits)
 
 
+def _rolling_rs_ratio(ticker_s: pd.Series, spy_s: pd.Series, lookback: int = 21) -> pd.Series:
+    """
+    Tägliche 1M-Relativstärke als Ratio:
+        RS = (P_t / P_{t-21}) / (SPY_t / SPY_{t-21})
+    Werte >= 1.0 bedeuten Outperformance vs. SPY über 1 Monat.
+    """
+    aligned = pd.concat([ticker_s, spy_s], axis=1, join="inner").dropna()
+    if aligned.shape[1] < 2 or len(aligned) < lookback + 2:
+        return pd.Series(dtype=float)
+
+    t = aligned.iloc[:, 0]
+    b = aligned.iloc[:, 1]
+    t_ret = t / t.shift(lookback)
+    b_ret = b / b.shift(lookback)
+    ratio = t_ret / b_ret
+    return ratio.replace([np.inf, -np.inf], np.nan).dropna()
+
+
+def _rs_bar_sparkline(
+    ticker_s: pd.Series,
+    spy_s: pd.Series,
+    lookback: int = RS_BAR_LOOKBACK,
+    history: int = RS_BAR_HISTORY,
+    width: int = RS_BAR_WIDTH,
+    height: int = RS_BAR_HEIGHT,
+) -> list[dict]:
+    """Balken-Koordinaten für ein 6M-Sparkline der rollierenden 1M-RS-Ratio."""
+    series = _rolling_rs_ratio(ticker_s, spy_s, lookback=lookback)
+    if series.empty:
+        return []
+
+    values = series.iloc[-history:].astype(float).tolist()
+    if len(values) < 2:
+        return []
+
+    mid = height / 2.0
+    dev = max(abs(v - 1.0) for v in values)
+    dev = max(dev, 0.02)
+
+    n = len(values)
+    bar_w = width / n
+    gap = max(bar_w * 0.18, 0.15)
+    draw_w = max(bar_w - gap, 0.35)
+
+    bars: list[dict] = []
+    for i, v in enumerate(values):
+        above = v >= 1.0
+        mag = min(abs(v - 1.0) / dev, 1.0) * (mid - 1.0)
+        mag = max(mag, 0.5)
+        if above:
+            y = mid - mag
+            h = mag
+        else:
+            y = mid
+            h = mag
+        bars.append(
+            {
+                "x": round(i * bar_w, 3),
+                "y": round(y, 3),
+                "w": round(draw_w, 3),
+                "h": round(h, 3),
+                "up": above,
+                "v": round(v, 4),
+            }
+        )
+    return bars
+
+
 def calculate_relative_strength(closes: pd.DataFrame) -> list[dict]:
     if BENCHMARK not in closes.columns:
         raise ValueError("SPY Benchmark fehlt in den Daten")
@@ -148,6 +222,9 @@ def calculate_relative_strength(closes: pd.DataFrame) -> list[dict]:
                         spark_norm = [50.0] * len(spark)
 
             row["sparkline"] = spark_norm
+            row["rs_bars"] = _rs_bar_sparkline(s, spy)
+            row["rs_bar_width"] = RS_BAR_WIDTH
+            row["rs_bar_height"] = RS_BAR_HEIGHT
             results.append(row)
 
     for row in results:

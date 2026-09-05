@@ -6,13 +6,35 @@
     <title>Relative Strength Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        /* Tabelle darf breit werden und horizontal scrollen */
         .table-scroll {
-            overflow-x: auto;
+            overflow: auto;
             -webkit-overflow-scrolling: touch;
+            max-height: calc(100vh - 190px);
         }
         table.rs-table {
-            min-width: 1400px;
+            min-width: 1520px;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+        table.rs-table thead th {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            background: #f9fafb;
+            box-shadow: 0 1px 0 0 #e5e7eb;
+        }
+        table.rs-table thead th.col-sticky {
+            left: 0;
+            z-index: 30;
+        }
+        table.rs-table tbody td.col-sticky {
+            position: sticky;
+            left: 0;
+            z-index: 10;
+            background: #fff;
+        }
+        table.rs-table tbody tr:hover td.col-sticky {
+            background: #f9fafb;
         }
     </style>
 </head>
