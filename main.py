@@ -14,6 +14,7 @@ import uvicorn
 from data.fetcher import fetch_price_data
 from data.rs_calculator import calculate_relative_strength
 from data.tickers import TICKERS
+from data.screeners import load_screening
 
 app = FastAPI(title="Market Relative Strength")
 templates = Jinja2Templates(directory="templates")
@@ -22,6 +23,13 @@ security = HTTPBasic()
 _cache = {
     "data": None,
     "timestamp": None,
+    "screening": {
+        "rows": [],
+        "screener_url": "",
+        "count": 0,
+        "errors": [],
+        "counts": {},
+    },
 }
 
 TZ = ZoneInfo("Europe/Berlin")
@@ -53,6 +61,23 @@ def load_data():
     _cache["data"] = rs_data
     _cache["timestamp"] = datetime.now(TZ)
     print(f"[{datetime.now(TZ)}] ✅ {len(rs_data)} Einträge geladen")
+
+    try:
+        _cache["screening"] = load_screening()
+        print(
+            f"[{datetime.now(TZ)}] Screening: "
+            f"{_cache['screening'].get('count', 0)} Uniq-Ticker"
+        )
+    except Exception as e:
+        print(f"[{datetime.now(TZ)}] Screening-Fehler: {e}")
+        _cache["screening"] = {
+            "rows": [],
+            "screener_url": "",
+            "count": 0,
+            "errors": [str(e)],
+            "counts": {},
+        }
+
     return rs_data
 
 
@@ -96,6 +121,31 @@ async def index(
     movers_top5 = []
     movers_industry = []
     movers_countries = []
+
+    if group == "screening":
+        screening = _cache.get("screening") or {}
+        return templates.TemplateResponse(
+            "index.html",
+            {
+                "request": request,
+                "data": [],
+                "groups": list(TICKERS.keys()),
+                "active_group": group,
+                "sort": sort,
+                "dir": dir,
+                "movers_top5": [],
+                "movers_industry": [],
+                "movers_countries": [],
+                "screening_rows": screening.get("rows") or [],
+                "screener_url": screening.get("screener_url") or "",
+                "screening_count": screening.get("count") or 0,
+                "screening_errors": screening.get("errors") or [],
+                "screening_counts": screening.get("counts") or {},
+                "last_update": _cache["timestamp"].strftime("%Y-%m-%d %H:%M")
+                if _cache["timestamp"]
+                else "-",
+            },
+        )
 
     if group == "movers":
         if "sort" not in request.query_params:
@@ -144,6 +194,11 @@ async def index(
             "movers_top5": movers_top5,
             "movers_industry": movers_industry,
             "movers_countries": movers_countries,
+            "screening_rows": [],
+            "screener_url": "",
+            "screening_count": 0,
+            "screening_errors": [],
+            "screening_counts": {},
             "last_update": _cache["timestamp"].strftime("%Y-%m-%d %H:%M")
             if _cache["timestamp"]
             else "-",
