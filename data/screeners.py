@@ -9,23 +9,23 @@ import requests
 SCREENER_URLS = {
     "jahr": os.getenv(
         "FINVIZ_URL_JAHR",
-        "https://elite.finviz.com/export/screener?v=211&p=w&f=cap_10to,ind_stocksonly,sh_float_150tox,ta_perf_10y50o,ta_perf2_52w50o&ft=4&ta=0&o=-marketcap",
+        "https://elite.finviz.com/export/screener?v=111&f=cap_10to,ind_stocksonly,sh_float_150tox,ta_perf_10y50o,ta_perf2_52w50o&o=-marketcap",
     ),
     "quartal": os.getenv(
         "FINVIZ_URL_QUARTAL",
-        "https://elite.finviz.com/export/screener?v=211&p=w&f=cap_10to,ind_stocksonly,sh_float_150tox,ta_perf_10y50o,ta_perf2_50to-26w&ft=3&ta=0&o=-marketcap",
+        "https://elite.finviz.com/export/screener?v=111&f=cap_10to,ind_stocksonly,sh_float_150tox,ta_perf_10y50o,ta_perf2_50to-26w&o=-marketcap",
     ),
     "monat": os.getenv(
         "FINVIZ_URL_MONAT",
-        "https://elite.finviz.com/export/screener?v=211&p=d&f=cap_7to,sh_avgvol_o300,sh_curvol_o100,ta_perf_26w50o,ta_volatility_mo5&ft=4&ta=0&o=-perf4w",
+        "https://elite.finviz.com/export/screener?v=111&f=cap_7to,sh_avgvol_o300,sh_curvol_o100,ta_perf_26w50o,ta_volatility_mo5&o=-perf4w",
     ),
     "woche": os.getenv(
         "FINVIZ_URL_WOCHE",
-        "https://elite.finviz.com/export/screener?v=211&p=d&f=cap_7to,sh_avgvol_o300,sh_curvol_o100,ta_perf_1w10o,ta_volatility_wo4&ft=4&ta=0&o=-marketcap",
+        "https://elite.finviz.com/export/screener?v=111&f=cap_7to,sh_avgvol_o300,sh_curvol_o100,ta_perf_1w10o,ta_volatility_wo4&o=-marketcap",
     ),
     "volume": os.getenv(
         "FINVIZ_URL_VOLUME",
-        "https://elite.finviz.com/export/screener?v=211&p=w&f=cap_midover,ind_stocksonly,sh_relvol_o1.5,ta_perf_7.5to-d,ta_perf2_20to-4w&ta=0",
+        "https://elite.finviz.com/export/screener?v=111&f=cap_midover,ind_stocksonly,sh_relvol_o1.5,ta_perf_7.5to-d,ta_perf2_20to-4w",
     ),
 }
 
