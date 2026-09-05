@@ -82,7 +82,13 @@ def fetch_screener_tickers(url: str, auth: str) -> list[str]:
 
 
 def combined_screener_url(tickers: list[str]) -> str:
-    return "https://elite.finviz.com/screener.ashx?v=111&t=" + ",".join(tickers)
+    if not tickers:
+        return ""
+    return (
+        "https://elite.finviz.com/screener?v=211&p=d&t="
+        + ",".join(tickers)
+        + "&ta=0&o=-perf4w"
+    )
 
 
 def to_browser_url(url: str) -> str:
@@ -142,5 +148,7 @@ def load_screening() -> dict:
         "count": len(uniq),
         "errors": errors,
         "counts": {k: len(sets[k]) for k in COLUMNS},
-        "header_urls": {k: to_browser_url(SCREENER_URLS.get(k) or "") for k in COLUMNS},
+        "header_urls": {
+            k: combined_screener_url(sorted(sets[k])) for k in COLUMNS
+        },
     }
