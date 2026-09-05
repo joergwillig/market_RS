@@ -38,13 +38,17 @@ def _auth() -> str:
 
 
 def to_export_url(url: str, auth: str) -> str:
-    p = urlparse(url)
-    q = parse_qs(p.query, keep_blank_values=True)
-    q.pop("auth", None)
-    q["auth"] = [auth]
-    path = p.path if "export" in p.path else "/export/screener"
-    query = urlencode({k: v[-1] for k, v in q.items()})
-    return urlunparse(("https", "elite.finviz.com", path, "", query, ""))
+    # Filter unverändert lassen, nur auth anhängen.
+    raw = url.strip()
+    if "auth=" in raw:
+        p = urlparse(raw)
+        q = parse_qs(p.query, keep_blank_values=True)
+        q.pop("auth", None)
+        raw = urlunparse((p.scheme, p.netloc, p.path, p.params,
+                          urlencode({k: v[-1] for k, v in q.items()}, safe=","),
+                          p.fragment))
+    sep = "&" if "?" in raw else "?"
+    return f"{raw}{sep}auth={auth}"
 
 
 def tickers_from_csv(text: str) -> list[str]:
@@ -70,13 +74,26 @@ def fetch_screener_tickers(url: str, auth: str) -> list[str]:
     if not url:
         return []
     export_url = to_export_url(url, auth)
+    print(f"Finviz GET {export_url.split('auth=')[0]}auth=***")
     r = requests.get(export_url, headers=HEADERS, timeout=45)
+    print(f"Finviz HTTP {r.status_code} {r.headers.get('Content-Type')} {len(r.content)}b | {r.text[:120]!r}")
     r.raise_for_status()
     return tickers_from_csv(r.text)
 
 
 def combined_screener_url(tickers: list[str]) -> str:
     return "https://elite.finviz.com/screener.ashx?v=111&t=" + ",".join(tickers)
+
+
+def to_browser_url(url: str) -> str:
+    """Export-URL → normale Screener-URL zum Öffnen im Browser."""
+    if not url:
+        return ""
+    p = urlparse(url)
+    q = parse_qs(p.query, keep_blank_values=True)
+    q.pop("auth", None)
+    query = urlencode({k: v[-1] for k, v in q.items()})
+    return urlunparse(("https", "elite.finviz.com", "/screener.ashx", "", query, ""))
 
 
 def load_screening() -> dict:
@@ -125,4 +142,5 @@ def load_screening() -> dict:
         "count": len(uniq),
         "errors": errors,
         "counts": {k: len(sets[k]) for k in COLUMNS},
+        "header_urls": {k: to_browser_url(SCREENER_URLS.get(k) or "") for k in COLUMNS},
     }
