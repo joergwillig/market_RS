@@ -144,7 +144,7 @@
                     <th class="px-2 py-3 font-semibold text-right">
                         {% if show_sort %}{{ sort_link('pct_1y', 'Pct 1Y') }}{% else %}Pct 1Y{% endif %}
                     </th>
-                    <th class="px-3 py-3 font-semibold border-l border-gray-200 min-w-[7rem]">1M RS</th>
+                    <th class="px-3 py-3 font-semibold border-l border-gray-200">1M RS</th>
                     <th class="px-3 py-3 pr-6 font-semibold border-l border-gray-200 whitespace-nowrap">6M RS</th>
                 </tr>
             </thead>
@@ -159,11 +159,12 @@
                             {{ item.ticker }}
                         </a>
                     </td>
-                        <td class="px-3 py-2.5 text-gray-600 whitespace-nowrap max-w-[9rem] truncate">
+                        <td class="px-3 py-2.5 text-gray-600 max-w-[7rem]">
                         <a href="https://elite.finviz.com/screener?v=211&p=d&f=etf_heldby_{{ item.ticker }}&ft=5&ta=0&o=-perf52w"
                            target="_blank"
                            rel="noopener noreferrer"
-                           class="text-gray-700 hover:text-blue-700 hover:underline">
+                           class="block truncate text-gray-700 hover:text-blue-700 hover:underline"
+                           title="{{ item.name }}">
                             {{ item.name }}
                         </a>
                     </td>
@@ -183,7 +184,7 @@
                     {{ heat_cell(item.pct_3m) }}
                     {{ heat_cell(item.pct_6m) }}
                     {{ heat_cell(item.pct_1y) }}
-                    <td class="px-3 py-2.5 border-l border-gray-100 min-w-[7rem]">
+                    <td class="px-3 py-2.5 border-l border-gray-100">
                         {% if item.sparkline and item.sparkline|length > 1 %}
                         <svg class="h-6 w-28 block" viewBox="0 0 100 24" preserveAspectRatio="none">
                             <polyline
