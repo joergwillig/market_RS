@@ -90,7 +90,7 @@
         <table class="rs-table w-full text-sm">
             <thead class="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500">
                 <tr>
-                   <th class="px-3 py-3 font-semibold col-sticky">
+                    <th class="px-3 py-3 font-semibold">
                         {% if show_sort %}{{ sort_link('ticker', 'Ticker') }}{% else %}Ticker{% endif %}
                     </th>
                     <th class="px-3 py-3 font-semibold">
@@ -106,10 +106,10 @@
                         {% if show_sort %}{{ sort_link('abs_3m', 'Abs 3M') }}{% else %}Abs 3M{% endif %}
                     </th>
                     <th class="px-2 py-3 font-semibold text-right">
-                        {% if show_sort %}{{ sort_link('abs_1y', 'Abs 1Y') }}{% else %}Abs 1Y{% endif %}
+                        {% if show_sort %}{{ sort_link('abs_6m', 'Abs 6M') }}{% else %}Abs 6M{% endif %}
                     </th>
                     <th class="px-2 py-3 font-semibold text-right">
-                        {% if show_sort %}{{ sort_link('abs_ytd', 'Abs YTD') }}{% else %}Abs YTD{% endif %}
+                        {% if show_sort %}{{ sort_link('abs_1y', 'Abs 1Y') }}{% else %}Abs 1Y{% endif %}
                     </th>
                     <th class="px-2 py-3 font-semibold text-right border-l border-gray-200">
                         {% if show_sort %}{{ sort_link('rel_1w', 'Rel 1W') }}{% else %}Rel 1W{% endif %}
@@ -120,14 +120,14 @@
                     <th class="px-2 py-3 font-semibold text-right bg-amber-50">
                         {% if show_sort %}{{ sort_link('rel_1m_chg', 'Δ Rel 1M') }}{% else %}Δ Rel 1M{% endif %}
                     </th>
-                    <th class="px-2 py-3 font-semibold text-right">
+                                        <th class="px-2 py-3 font-semibold text-right">
                         {% if show_sort %}{{ sort_link('rel_3m', 'Rel 3M') }}{% else %}Rel 3M{% endif %}
                     </th>
                     <th class="px-2 py-3 font-semibold text-right">
-                        {% if show_sort %}{{ sort_link('rel_1y', 'Rel 1Y') }}{% else %}Rel 1Y{% endif %}
+                        {% if show_sort %}{{ sort_link('rel_6m', 'Rel 6M') }}{% else %}Rel 6M{% endif %}
                     </th>
                     <th class="px-2 py-3 font-semibold text-right">
-                        {% if show_sort %}{{ sort_link('rel_ytd', 'Rel YTD') }}{% else %}Rel YTD{% endif %}
+                        {% if show_sort %}{{ sort_link('rel_1y', 'Rel 1Y') }}{% else %}Rel 1Y{% endif %}
                     </th>
                     <th class="px-2 py-3 font-semibold text-right border-l border-gray-200">
                         {% if show_sort %}{{ sort_link('pct_1w', 'Pct 1W') }}{% else %}Pct 1W{% endif %}
@@ -135,14 +135,14 @@
                     <th class="px-2 py-3 font-semibold text-right">
                         {% if show_sort %}{{ sort_link('pct_1m', 'Pct 1M') }}{% else %}Pct 1M{% endif %}
                     </th>
-                    <th class="px-2 py-3 font-semibold text-right">
+                                        <th class="px-2 py-3 font-semibold text-right">
                         {% if show_sort %}{{ sort_link('pct_3m', 'Pct 3M') }}{% else %}Pct 3M{% endif %}
                     </th>
                     <th class="px-2 py-3 font-semibold text-right">
-                        {% if show_sort %}{{ sort_link('pct_1y', 'Pct 1Y') }}{% else %}Pct 1Y{% endif %}
+                        {% if show_sort %}{{ sort_link('pct_6m', 'Pct 6M') }}{% else %}Pct 6M{% endif %}
                     </th>
                     <th class="px-2 py-3 font-semibold text-right">
-                        {% if show_sort %}{{ sort_link('pct_ytd', 'Pct YTD') }}{% else %}Pct YTD{% endif %}
+                        {% if show_sort %}{{ sort_link('pct_1y', 'Pct 1Y') }}{% else %}Pct 1Y{% endif %}
                     </th>
                     <th class="px-3 py-3 font-semibold border-l border-gray-200 min-w-[7rem]">1M RS</th>
                     <th class="px-3 py-3 font-semibold border-l border-gray-200 min-w-[10rem]">6M RS</th>
@@ -151,7 +151,7 @@
             <tbody class="divide-y divide-gray-100">
                 {% for item in rows %}
                 <tr class="hover:bg-gray-50/80">
-                    <td class="px-3 py-2.5 font-semibold col-sticky">
+                    <td class="px-3 py-2.5 font-semibold">
                         <a href="https://elite.finviz.com/stock?t={{ item.ticker }}&p=d"
                            target="_blank"
                            rel="noopener noreferrer"
@@ -170,19 +170,19 @@
                     <td class="px-2 py-2.5 text-right border-l border-gray-100">{{ pct_cell(item.abs_1w) }}</td>
                     <td class="px-2 py-2.5 text-right">{{ pct_cell(item.abs_1m) }}</td>
                     <td class="px-2 py-2.5 text-right">{{ pct_cell(item.abs_3m) }}</td>
+                    <td class="px-2 py-2.5 text-right">{{ pct_cell(item.abs_6m) }}</td>
                     <td class="px-2 py-2.5 text-right">{{ pct_cell(item.abs_1y) }}</td>
-                    <td class="px-2 py-2.5 text-right">{{ pct_cell(item.abs_ytd) }}</td>
                     <td class="px-2 py-2.5 text-right border-l border-gray-100">{{ pct_cell(item.rel_1w) }}</td>
                     <td class="px-2 py-2.5 text-right bg-blue-50/40 font-semibold">{{ pct_cell(item.rel_1m) }}</td>
                     <td class="px-2 py-2.5 text-right bg-amber-50/40 font-semibold">{{ pct_cell(item.rel_1m_chg) }}</td>
-                    <td class="px-2 py-2.5 text-right">{{ pct_cell(item.rel_3m) }}</td>
+                                        <td class="px-2 py-2.5 text-right">{{ pct_cell(item.rel_3m) }}</td>
+                    <td class="px-2 py-2.5 text-right">{{ pct_cell(item.rel_6m) }}</td>
                     <td class="px-2 py-2.5 text-right">{{ pct_cell(item.rel_1y) }}</td>
-                    <td class="px-2 py-2.5 text-right">{{ pct_cell(item.rel_ytd) }}</td>
                     {{ heat_cell(item.pct_1w, 'border-l border-gray-100') }}
                     {{ heat_cell(item.pct_1m) }}
                     {{ heat_cell(item.pct_3m) }}
+                    {{ heat_cell(item.pct_6m) }}
                     {{ heat_cell(item.pct_1y) }}
-                    {{ heat_cell(item.pct_ytd) }}
                     <td class="px-3 py-2.5 border-l border-gray-100 min-w-[7rem]">
                         {% if item.sparkline and item.sparkline|length > 1 %}
                         <svg class="h-6 w-28 block" viewBox="0 0 100 24" preserveAspectRatio="none">
@@ -297,11 +297,11 @@
                            rel="noopener noreferrer"
                            class="text-blue-700 hover:underline">{{ row.ticker }}</a>
                     </td>
-                    <td class="px-3 py-2.5 text-right">{{ row.jahr }}</td>
-                    <td class="px-3 py-2.5 text-right">{{ row.quartal }}</td>
-                    <td class="px-3 py-2.5 text-right">{{ row.monat }}</td>
-                    <td class="px-3 py-2.5 text-right">{{ row.woche }}</td>
-                    <td class="px-3 py-2.5 text-right">{{ row.volume }}</td>
+                                        <td class="px-3 py-2.5 text-right"{% if row.jahr %} style="background-color: hsl(120, 58%, 94%); color: hsl(120, 48%, 28%);"{% endif %}>{{ row.jahr }}</td>
+                    <td class="px-3 py-2.5 text-right"{% if row.quartal %} style="background-color: hsl(120, 58%, 94%); color: hsl(120, 48%, 28%);"{% endif %}>{{ row.quartal }}</td>
+                    <td class="px-3 py-2.5 text-right"{% if row.monat %} style="background-color: hsl(120, 58%, 94%); color: hsl(120, 48%, 28%);"{% endif %}>{{ row.monat }}</td>
+                    <td class="px-3 py-2.5 text-right"{% if row.woche %} style="background-color: hsl(120, 58%, 94%); color: hsl(120, 48%, 28%);"{% endif %}>{{ row.woche }}</td>
+                    <td class="px-3 py-2.5 text-right"{% if row.volume %} style="background-color: hsl(120, 58%, 94%); color: hsl(120, 48%, 28%);"{% endif %}>{{ row.volume }}</td>
                     <td class="px-3 py-2.5 text-right font-semibold">{{ row.total }}</td>
                 </tr>
                 {% else %}

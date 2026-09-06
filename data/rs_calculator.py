@@ -6,10 +6,10 @@ PERIODS = {
     "1w": 5,
     "1m": 21,
     "3m": 63,
+    "6m": 126,
     "1y": 252,
 }
 
-# 6M Handelslage für das 1M-RS-Balkensparkline (~126 Handelstage)
 RS_BAR_LOOKBACK = 21
 RS_BAR_HISTORY = 126
 RS_BAR_WIDTH = 140
@@ -90,11 +90,6 @@ def _round(v: float | None, digits: int = 2) -> float | None:
 
 
 def _rolling_rs_ratio(ticker_s: pd.Series, spy_s: pd.Series, lookback: int = 21) -> pd.Series:
-    """
-    Tägliche 1M-Relativstärke als Ratio:
-        RS = (P_t / P_{t-21}) / (SPY_t / SPY_{t-21})
-    Werte >= 1.0 bedeuten Outperformance vs. SPY über 1 Monat.
-    """
     aligned = pd.concat([ticker_s, spy_s], axis=1, join="inner").dropna()
     if aligned.shape[1] < 2 or len(aligned) < lookback + 2:
         return pd.Series(dtype=float)
@@ -115,7 +110,6 @@ def _rs_bar_sparkline(
     width: int = RS_BAR_WIDTH,
     height: int = RS_BAR_HEIGHT,
 ) -> list[dict]:
-    """Balken-Koordinaten für ein 6M-Sparkline der rollierenden 1M-RS-Ratio."""
     series = _rolling_rs_ratio(ticker_s, spy_s, lookback=lookback)
     if series.empty:
         return []
@@ -166,7 +160,7 @@ def calculate_relative_strength(closes: pd.DataFrame) -> list[dict]:
         closes.index = closes.index.tz_localize(None)
 
     spy = closes[BENCHMARK].dropna()
-    rel_maps = {p: {} for p in list(PERIODS.keys()) + ["ytd"]}
+    rel_maps = {p: {} for p in PERIODS.keys()}
     results: list[dict] = []
 
     for group_name, group_tickers in TICKERS.items():
@@ -187,16 +181,11 @@ def calculate_relative_strength(closes: pd.DataFrame) -> list[dict]:
 
             for key, days in PERIODS.items():
                 row[f"abs_{key}"] = _round(_return(s, days))
-            row["abs_ytd"] = _round(_ytd_return(s))
 
             for key, days in PERIODS.items():
                 r = _rel_return(s, spy, days)
                 row[f"rel_{key}"] = _round(r)
                 rel_maps[key][ticker] = r
-
-            rytd = _rel_ytd(s, spy)
-            row["rel_ytd"] = _round(rytd)
-            rel_maps["ytd"][ticker] = rytd
 
             rel_now = _rel_return_offset(s, spy, PERIODS["1m"], 0)
             rel_prev = _rel_return_offset(s, spy, PERIODS["1m"], 21)
@@ -229,7 +218,7 @@ def calculate_relative_strength(closes: pd.DataFrame) -> list[dict]:
 
     for row in results:
         t = row["ticker"]
-        for key in list(PERIODS.keys()) + ["ytd"]:
+        for key in PERIODS.keys():
             row[f"pct_{key}"] = _round(_percentile(rel_maps[key], t), 0)
 
     results = sorted(
