@@ -145,7 +145,7 @@
                         {% if show_sort %}{{ sort_link('pct_1y', 'Pct 1Y') }}{% else %}Pct 1Y{% endif %}
                     </th>
                     <th class="px-3 py-3 font-semibold border-l border-gray-200 min-w-[7rem]">1M RS</th>
-                    <th class="px-3 py-3 pr-4 font-semibold border-l border-gray-200 min-w-[11rem]">6M RS</th>
+                    <th class="px-3 py-3 pr-6 font-semibold border-l border-gray-200 whitespace-nowrap">6M RS</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
@@ -159,7 +159,7 @@
                             {{ item.ticker }}
                         </a>
                     </td>
-                    <td class="px-3 py-2.5 text-gray-600 whitespace-nowrap">
+                        <td class="px-3 py-2.5 text-gray-600 whitespace-nowrap max-w-[9rem] truncate">
                         <a href="https://elite.finviz.com/screener?v=211&p=d&f=etf_heldby_{{ item.ticker }}&ft=5&ta=0&o=-perf52w"
                            target="_blank"
                            rel="noopener noreferrer"
