@@ -85,7 +85,7 @@
 {%- endmacro %}
 
 {% macro rs_table(rows, show_sort=True) %}
-<div class="bg-white rounded-xl shadow-sm border border-gray-100"></div>
+<div class="bg-white rounded-xl shadow-sm border border-gray-100">
     <div class="table-scroll">
         <table class="rs-table w-full text-sm">
             <thead class="bg-gray-50 text-left text-xs uppercase tracking-wide text-gray-500">
@@ -201,7 +201,7 @@
                     </td>
                         <td class="px-3 py-2.5 pr-4 border-l border-gray-100">
                         {% if item.rs_bars and item.rs_bars|length > 1 %}
-                        <svg class="h-7 w-36 block"
+                        <svg class="h-7 w-28 block"
                              viewBox="0 0 {{ item.rs_bar_width }} {{ item.rs_bar_height }}"
                              preserveAspectRatio="none"
                              role="img"
